@@ -57,12 +57,15 @@ def permute_in_chunks(size:int, chunk_size:int, seed:int=42) -> List[int]:
     '''
     np.random.seed(seed)
     arr = np.arange(size)
-    permuted_arr = np.empty(size, dtype=int)
-    
-    for start in range(0, size, chunk_size):
-        end = start + chunk_size
-        permuted_arr[start:end] = np.random.permutation(arr[start:end])
-
+    start = 0
+    end = len(arr) - len(arr) % chunk_size
+    chunks = [arr[i:i+chunk_size] for i in range(start, end, chunk_size)]
+    p_chunks = np.random.permutation(chunks)
+    p_values = [np.random.permutation(chunk) for chunk in p_chunks]
+    # add the remaining elements
+    if end < len(arr):
+        p_values.append(np.random.permutation(arr[end:]))
+    permuted_arr = np.concatenate(p_values)
     return list(permuted_arr)
 
 def make_zarr_group(total_rows:int, all_array_types:List[str], feature_mappings:Dict[str, List[str]], seed:int=42) -> zarr.Group:
