@@ -117,3 +117,42 @@ def case_of_one(dataset:Dict[str, Tuple[zarr.Array, List[str]]]) -> Dict[str, Tu
 
     return_merged_array = {array_type: (merged_arrays[array_type], list(feature_mappings[array_type])) for array_type in dataset.keys()}
     return return_merged_array
+
+
+def do_batch(start_row:Optional[int], end_row:Optional[int], in_rows:int, row_hash:Dict[str, List[int]], array_type:str, feature_mappings:Dict[str, Dict[str, int]], source_array:zarr.Array, source_features:List[str]) -> Tuple[np.ndarray, List[int]]:
+    '''
+    Do batch processing for the given parameters.
+    Args:
+        start_row: The starting row index
+        end_row: The ending row index
+        in_rows: The total number of rows
+        row_hash: A dictionary of row hashes
+        array_type: The type of the array
+        feature_mappings: A dictionary mapping array types to their features
+        source_array: The source array
+        source_features: The source features
+    Returns:
+        feed: The feed for the batch
+        select_row: The selected row
+    '''
+
+    if start_row is None or end_row is None:
+        get_rows = list(range(in_rows))
+        row_diff = in_rows
+        display_row = in_rows
+    else:
+        get_rows = list(range(start_row, end_row))
+        row_diff = end_row-start_row
+        display_row = end_row
+
+    # Order source features based on the feature_sets[array_type]
+    source_features_ordered = [feature_mappings[array_type][feature] for feature in source_features]
+    source_features_data = source_array[get_rows, :]
+    # Get the row number to be filled in the merged dataset -- we are ensuring that we fill the merged dataset randomly but in optimal fashion -- one chunk at a time.
+    select_row = [row_hash[array_type].pop(0) for _ in range(row_diff)]
+
+    feed = np.zeros((row_diff, len(feature_mappings[array_type])), dtype=np.int64) 
+    feed[:, source_features_ordered] = source_features_data
+
+    # print(f'\t\tRow: {display_row}/{in_rows}', end='\r')
+    return feed, select_row
