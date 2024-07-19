@@ -6,4 +6,4 @@ data/
 test*
 04-zarr-merge*
 07-final*
-__pycache__/
+__pycache__
