@@ -1,0 +1,6 @@
+temp*
+*.zarr
+*.zarr
+data
+test*
+__pycache__
