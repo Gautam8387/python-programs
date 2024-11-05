@@ -158,4 +158,4 @@ def do_batch(start_row:Optional[int], end_row:Optional[int], in_rows:int, row_ha
     feed[:, source_features_ordered] = source_features_data
 
     # print(f'\t\tRow: {display_row}/{in_rows}', end='\r')
-    return feed, select_row
+   return feed, select_row
